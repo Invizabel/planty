@@ -39,7 +39,7 @@ let plants = [
 
 function calc_sun()
 {
-    if ((Math.floor(Math.random() * 100) + 1) === 1)
+    if ((Math.floor(Math.random() * 90) + 1) === 1)
     {
         sun = Math.min(sun + 25, 999);
     }
@@ -114,13 +114,9 @@ function planty()
     commit(canvas);
 }
 
-function loop() {
-    if (!running)
-    {
-        return;
-    }
+while (running)
+{
     planty();
-    setTimeout(loop, 100);
 }
-loop();
+
 gui_direct_draw_release(gui);
