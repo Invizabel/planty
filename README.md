@@ -1,1 +1,1 @@
-Plants Vs Zombies for Flipper Zero, kinda!
+Plants Vs. Zombies for Flipper Zero, kinda!
