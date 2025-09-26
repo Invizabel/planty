@@ -10,7 +10,8 @@ let draw_line = ffi("void canvas_draw_line(void*,int,int,int,int)");
 let draw_str = ffi("void canvas_draw_str(void*, int, int, char*)");
 let Math = require("math");
 
-
+let input_events = furi_record_open("input_events");
+//let input_event = furi_pubsub_subscribe("input_event_queue", 1, null);
 let gui = furi_record_open("gui");
 let canvas = gui_direct_draw_acquire(gui);
 
@@ -39,7 +40,7 @@ let plants = [
 
 function calc_sun()
 {
-    if ((Math.floor(Math.random() * 90) + 1) === 1)
+    if ((Math.floor(Math.random() * 2) + 1) === 1)
     {
         sun = Math.min(sun + 25, 999);
     }
@@ -120,3 +121,4 @@ while (running)
 }
 
 gui_direct_draw_release(gui);
+furi_record_close("gui");
