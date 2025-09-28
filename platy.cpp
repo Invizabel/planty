@@ -32,7 +32,7 @@ int plants[][28][2] = {
 
 void calc_sun()
 {
-    if((rand() % 9 + 1) == 1)
+    if((rand() % 90 + 1) == 1)
     {
         if (sun_array_count + 1 <= 40)
         {
@@ -159,7 +159,26 @@ static void input_callback(InputEvent* event, void* context)
             }
             else
             {
-                board[player_y / 12][player_x / 12] = choice;
+                if (choice == 1 && sun_array_count >= 4)
+                {
+                    sun_array_count -= 4;
+                    sun = sun_array[sun_array_count];
+                    board[player_y / 12][player_x / 12] = choice;
+                }
+
+                if ((choice == 2 && sun_array_count >= 2) || (choice == 3 && sun_array_count >= 2))
+                {
+                    sun_array_count -= 2;
+                    sun = sun_array[sun_array_count];
+                    board[player_y / 12][player_x / 12] = choice;
+                }
+
+                if (choice == 4 && sun_array_count >= 1)
+                {
+                    sun_array_count -= 1;
+                    sun = sun_array[sun_array_count];
+                    board[player_y / 12][player_x / 12] = choice;
+                }
             }
         }
     }
@@ -185,7 +204,7 @@ int main()
     FuriMessageQueue* queue = furi_message_queue_alloc(8, sizeof(InputEvent));
     ViewPort* view_port = view_port_alloc();
     view_port_draw_callback_set(view_port, draw_callback, NULL);
-    view_port_input_callback_set(view_port, input_callback, queue);\
+    view_port_input_callback_set(view_port, input_callback, queue);
     Gui* gui = (Gui*)furi_record_open("gui");
     gui_add_view_port(gui, view_port, GuiLayerFullscreen);
     dolphin_deed(DolphinDeedPluginGameStart);
