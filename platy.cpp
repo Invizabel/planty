@@ -1,7 +1,6 @@
+#include "dolphin/dolphin.h"
 #include <furi.h>
 #include <gui/gui.h>
-#include <gui/canvas.h>
-#include <input/input.h>
 #include <stdlib.h>
 
 constexpr int BOARD_WIDTH = 9;
@@ -15,6 +14,8 @@ const char* sun_array[41] = {
     "600","625","650","675","700","725","750","775","800","825","850","875",
     "900","925","950","975","999"
 };
+
+int choice = -1;
 
 int player_x = 6;
 int player_y = 6;
@@ -105,77 +106,104 @@ void draw_board(Canvas* canvas)
     }
 }
 
-bool check_input(InputEvent event)
+static void input_callback(InputEvent* event, void* context)
 {
-    if(event.type == InputTypePress)
+    FuriMessageQueue* queue = (FuriMessageQueue*)context;
+    if(event->type == InputTypeShort || event->type == InputTypeRepeat)
     {
-        switch (event.key)
+        if (event->key == InputKeyUp)
         {
-            case InputKeyUp:
-                if (player_y > 6)
-                    player_y -= 12;
-                else
-                    player_y -= 16;
-                break;
+            if (player_y > 6 and player_y <= 42)
+            {
+                player_y -= 12;
+            }
+            else if (player_y > 42)
+            {
+                player_y -= 16;
+            }
+        }
 
-            case InputKeyDown:
-                if (player_y < 42)
-                    player_y += 12;
-                else if (player_y < 58)
-                    player_y += 16;
-                break;
+        if (event->key == InputKeyDown)
+        {
+            if (player_y < 42)
+            {
+                player_y += 12;
+            }
+            else if (player_y < 58)
+            {
+                player_y += 16;
+            }
+        }
 
-            case InputKeyLeft:
-                if (player_x > 6)
-                    player_x -= 12;
-                break;
+        if (event->key == InputKeyLeft)
+        {
+            if (player_x > 6)
+            {
+                player_x -= 12;
+            }
+        }
 
-            case InputKeyRight:
-                if (player_x < 96)
-                    player_x += 12;
-                break;
+        if (event->key == InputKeyRight)
+        {
+            if (player_x < 96)
+            {
+                player_x += 12;
+            }
+        }
 
-            case InputKeyOk:
-                break;
-
-            case InputKeyBack:
-                return false;
-
-            default: break;
+        if (event->key == InputKeyOk)
+        {
+            if (player_y > 48)
+            {
+                choice = (player_x - 6) / 12 + 1;
+            }
+            else
+            {
+                board[player_y / 12][player_x / 12] = choice;
+            }
         }
     }
-    return true;
+    furi_message_queue_put(queue, event, FuriWaitForever);
 }
 
 
-void planty(Canvas* canvas)
+static void draw_callback(Canvas* canvas, void* context)
 {
-    InputEvent event;
-    bool running = true;
-    while(running)
-    {
-        running = check_input(event);
-        canvas_clear(canvas);
-        draw_board(canvas);   
-        draw_options(canvas);
-        draw_plants(canvas);
-        draw_player(canvas);
-        calc_sun();
-        canvas_draw_str(canvas, 96, 56, sun);
-        canvas_commit(canvas);
-    }
+    UNUSED(context);
+    canvas_clear(canvas);
+    draw_board(canvas);   
+    draw_options(canvas);
+    draw_plants(canvas);
+    draw_player(canvas);
+    calc_sun();
+    canvas_draw_str(canvas, 96, 56, sun);
+    canvas_commit(canvas);
 }
 
 int main()
 {
+    FuriMessageQueue* queue = furi_message_queue_alloc(8, sizeof(InputEvent));
+    ViewPort* view_port = view_port_alloc();
+    view_port_draw_callback_set(view_port, draw_callback, NULL);
+    view_port_input_callback_set(view_port, input_callback, queue);\
     Gui* gui = (Gui*)furi_record_open("gui");
-    Canvas* canvas = gui_direct_draw_acquire(gui);
+    gui_add_view_port(gui, view_port, GuiLayerFullscreen);
+    dolphin_deed(DolphinDeedPluginGameStart);
+    InputEvent event;
+    bool running = true;
+    while(running) {
+        if(furi_message_queue_get(queue, &event, FuriWaitForever) == FuriStatusOk) {
+            if(event.type == InputTypeShort && event.key == InputKeyBack) {
+                running = false;
+            }
+        }
+        view_port_update(view_port);
+    }
 
-    planty(canvas);
-
-    gui_direct_draw_release(gui);
-
-    // Close records when done
-    furi_record_close("gui");
+    view_port_enabled_set(view_port, false);
+    furi_message_queue_free(queue);
+    gui_remove_view_port(gui, view_port);
+    view_port_free(view_port);
+    furi_record_close(RECORD_GUI);
     return 0;
 }
