@@ -4,7 +4,6 @@
 #include <input/input.h>
 #include <stdlib.h>
 
-
 constexpr int BOARD_WIDTH = 9;
 constexpr int BOARD_HEIGHT = 4;
 
@@ -76,7 +75,7 @@ void draw_options(Canvas* canvas)
     
     int offset = 0;
     for(int i = 0; i < 4; i++)
-    { // 4 plant types
+    {
         for(int j = 0; j < 26; j++)
         {
             int x = plants[i][j][0];
@@ -106,14 +105,58 @@ void draw_board(Canvas* canvas)
     }
 }
 
+bool check_input(InputEvent event)
+{
+    if(event.type == InputTypePress)
+    {
+        switch (event.key)
+        {
+            case InputKeyUp:
+                if (player_y > 6)
+                    player_y -= 12;
+                else
+                    player_y -= 16;
+                break;
+
+            case InputKeyDown:
+                if (player_y < 42)
+                    player_y += 12;
+                else if (player_y < 58)
+                    player_y += 16;
+                break;
+
+            case InputKeyLeft:
+                if (player_x > 6)
+                    player_x -= 12;
+                break;
+
+            case InputKeyRight:
+                if (player_x < 96)
+                    player_x += 12;
+                break;
+
+            case InputKeyOk:
+                break;
+
+            case InputKeyBack:
+                return false;
+
+            default: break;
+        }
+    }
+    return true;
+}
+
 
 void planty(Canvas* canvas)
 {
+    InputEvent event;
     bool running = true;
     while(running)
     {
+        running = check_input(event);
         canvas_clear(canvas);
-        draw_board(canvas);
+        draw_board(canvas);   
         draw_options(canvas);
         draw_plants(canvas);
         draw_player(canvas);
