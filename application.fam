@@ -2,7 +2,7 @@ App(
     appid="planty",
     apptype=FlipperAppType.EXTERNAL,
     entry_point="main",
-    fap_description="PvZ Clone for Flipper Zero",
+    fap_description="PvZ Clone For Flipper Zero",
     fap_author="Invizabel",
     fap_weburl="https://github.com/Invizabel/planty",
 )
