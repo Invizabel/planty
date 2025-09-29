@@ -115,7 +115,7 @@ static void input_callback(InputEvent* event, void* context)
     {
         if (event->key == InputKeyUp)
         {
-            if (player_y > 6 and player_y <= 42)
+            if (player_y > 6 && player_y <= 42)
             {
                 player_y -= 12;
             }
