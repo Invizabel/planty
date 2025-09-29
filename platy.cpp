@@ -50,7 +50,8 @@ void draw_plants(Canvas* canvas)
         for(int x = 0; x < BOARD_WIDTH; x++)
         {
             int plant = board[y][x];
-            if(plant) {
+            if(plant)
+            {
                 for(int i = 0; i < 26; i++)
                 {
                     int a = plants[plant-1][i][0];
