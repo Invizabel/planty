@@ -78,7 +78,7 @@ void draw_options(Canvas* canvas)
     int offset = 0;
     for(int i = 0; i < 4; i++)
     {
-        for(int j = 0; j < 26; j++)
+        for(int j = 0; j < sizeof(plants[i]); j++)
         {
             int x = plants[i][j][0];
             int y = plants[i][j][1];
