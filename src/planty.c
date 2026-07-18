@@ -1,10 +1,13 @@
 #include "dolphin/dolphin.h"
 #include <furi.h>
+#include <furi_hal_rtc.h>
 #include <gui/gui.h>
-#include <stdlib.h>
 
 int BOARD_WIDTH = 9;
 int BOARD_HEIGHT = 4;
+
+DateTime dt;
+unsigned int last_second = 0;
 
 char * sun = "50";
 int sun_array_count = 2;
@@ -33,27 +36,51 @@ int plants[][28][2] = {
 
 void calc_sun()
 {
-    if((rand() % 90 + 1) == 1)
+    // Sun from sky
+    furi_hal_rtc_get_datetime(&dt);
+    if(dt.second % 10 == 0)
     {
-        if (sun_array_count + 1 <= 40)
+        if (sun_array_count + 1 <= 40 && dt.second != last_second)
         {
-            sun_array_count++;
+            sun_array_count += 1;
             sun = sun_array[sun_array_count];
         }
     }
+
+    // Sun from flowers
+    for(int y = 0; y < BOARD_HEIGHT; y += 1)
+    {
+        for(int x = 0; x < BOARD_WIDTH; x += 1)
+        {
+            int plant = board[y][x];
+            if(plant == 2)
+            {
+                if(dt.second % 24 == 0 && dt.second != last_second)
+                {
+                    if (sun_array_count + 1 <= 40)
+                    {
+                        sun_array_count += 1;
+                        sun = sun_array[sun_array_count];
+                    }
+                }
+            }
+        }
+    }
+
+    last_second = dt.second;
 }
 
 void draw_plants(Canvas * canvas)
 {
     
-    for(int y = 0; y < BOARD_HEIGHT; y++)
+    for(int y = 0; y < BOARD_HEIGHT; y += 1)
     {
-        for(int x = 0; x < BOARD_WIDTH; x++)
+        for(int x = 0; x < BOARD_WIDTH; x += 1)
         {
             int plant = board[y][x];
             if(plant)
             {
-                for(int i = 0; i < 26; i++)
+                for(int i = 0; i < 26; i += 1)
                 {
                     int a = plants[plant-1][i][0];
                     int b = plants[plant-1][i][1];
@@ -77,10 +104,10 @@ void draw_options(Canvas * canvas)
 { 
     
     int offset = 0;
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 5; i += 1)
     {
         int array_size = sizeof(plants[i]) / sizeof(plants[i][0]);
-        for(int j = 0; j < array_size; j++)
+        for(int j = 0; j < array_size; j += 1)
         {
             int x = plants[i][j][0];
             int y = plants[i][j][1];
@@ -219,10 +246,14 @@ int main()
     gui_add_view_port(gui, view_port, GuiLayerFullscreen);
     dolphin_deed(DolphinDeedPluginGameStart);
     InputEvent event;
+    
     bool running = true;
-    while(running) {
-        if(furi_message_queue_get(queue, &event, FuriWaitForever) == FuriStatusOk) {
-            if(event.type == InputTypeShort && event.key == InputKeyBack) {
+    while(running)
+    {
+        if(furi_message_queue_get(queue, &event, FuriWaitForever) == FuriStatusOk)
+        {
+            if(event.type == InputTypeShort && event.key == InputKeyBack)
+            {
                 running = false;
             }
         }
